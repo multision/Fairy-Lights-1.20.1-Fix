@@ -1,6 +1,5 @@
 package me.paulf.fairylights.server.item;
 
-import me.paulf.fairylights.server.ServerEventHandler;
 import me.paulf.fairylights.server.block.FLBlocks;
 import me.paulf.fairylights.server.block.FastenerBlock;
 import me.paulf.fairylights.server.capability.CapabilityHandler;
@@ -9,6 +8,9 @@ import me.paulf.fairylights.server.connection.ConnectionType;
 import me.paulf.fairylights.server.entity.FenceFastenerEntity;
 import me.paulf.fairylights.server.fastener.Fastener;
 import me.paulf.fairylights.server.fastener.PlayerFastener;
+import me.paulf.fairylights.server.item.HangingLightsConnectionItem;
+import me.paulf.fairylights.server.item.PennantBuntingConnectionItem;
+import me.paulf.fairylights.server.ServerEventHandler;
 import me.paulf.fairylights.server.sound.FLSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -106,23 +108,31 @@ public abstract class ConnectionItem extends Item {
      */
     public boolean hasValidNBT(ItemStack stack) {
         if (!stack.hasTag()) {
+            LOGGER.debug("Item has no NBT tag");
             return false;
         }
         
         CompoundTag tag = stack.getTag();
+        LOGGER.debug("Checking NBT validity for item: {}", stack.getItem().getClass().getSimpleName());
         
         // For hanging lights, check for pattern and string
         if (stack.getItem() instanceof HangingLightsConnectionItem) {
-            return tag.contains("pattern", Tag.TAG_LIST) && tag.contains("string", Tag.TAG_STRING);
+            boolean hasPattern = tag.contains("pattern", Tag.TAG_LIST);
+            boolean hasString = tag.contains("string", Tag.TAG_STRING);
+            LOGGER.debug("HangingLightsConnectionItem - hasPattern: {}, hasString: {}", hasPattern, hasString);
+            return hasPattern && hasString;
         }
         
         // For pennant buntings, check for pattern
         if (stack.getItem() instanceof PennantBuntingConnectionItem) {
-            return tag.contains("pattern", Tag.TAG_LIST);
+            boolean hasPattern = tag.contains("pattern", Tag.TAG_LIST);
+            LOGGER.debug("PennantBuntingConnectionItem - hasPattern: {}", hasPattern);
+            return hasPattern;
         }
         
         // For other connection items, check for basic NBT structure
         // This can be overridden by subclasses for specific validation
+        LOGGER.debug("Other connection item - assuming valid NBT");
         return true;
     }
 

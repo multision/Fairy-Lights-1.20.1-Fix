@@ -62,8 +62,6 @@ import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 
 public final class ServerEventHandler {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final int INVENTORY_CHECK_INTERVAL = 400; // Check every 20 seconds (20 ticks per second)
-    private int tickCounter = 0;
 
     @SubscribeEvent
     public void onEntityJoinWorld(final EntityJoinLevelEvent event) {
@@ -166,26 +164,6 @@ public final class ServerEventHandler {
         }
     }
 
-    /**
-     * Monitors when items are added to player inventories and captures color information.
-     * This is called periodically to ensure we catch any items that might have been missed.
-     */
-    private void checkAndCaptureInventoryColors(Player player) {
-        // Check main inventory
-        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-            ItemStack stack = player.getInventory().getItem(i);
-            if (!stack.isEmpty() && (stack.getItem() instanceof HangingLightsConnectionItem || stack.getItem() instanceof PennantBuntingConnectionItem)) {
-                captureConnectionItemColor(stack);
-            }
-        }
-        
-        // Check offhand
-        ItemStack offhandStack = player.getOffhandItem();
-        if (!offhandStack.isEmpty() && (offhandStack.getItem() instanceof HangingLightsConnectionItem || offhandStack.getItem() instanceof PennantBuntingConnectionItem)) {
-            captureConnectionItemColor(offhandStack);
-        }
-    }
-
     @SubscribeEvent
     public void onPlayerTick(final TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.END && !event.player.level().isClientSide()) {
@@ -195,14 +173,6 @@ public final class ServerEventHandler {
                     ServerProxy.sendToPlayersWatchingEntity(new UpdateEntityFastenerMessage(event.player, fastener.serializeNBT()), event.player);
                 }
             });
-            
-            // Periodic inventory check (every 20 seconds)
-            tickCounter++;
-            if (tickCounter >= INVENTORY_CHECK_INTERVAL) {
-                checkAndRepairInventoryNBT(event.player);
-                checkAndCaptureInventoryColors(event.player);
-                tickCounter = 0;
-            }
         }
     }
 

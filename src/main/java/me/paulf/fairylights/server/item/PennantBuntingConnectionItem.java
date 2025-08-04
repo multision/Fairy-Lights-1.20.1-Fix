@@ -33,6 +33,9 @@ public class PennantBuntingConnectionItem extends ConnectionItem {
     public InteractionResult useOn(UseOnContext context) {
         // Proactively capture color information before NBT might be stripped
         ItemStack stack = context.getItemInHand();
+        LOGGER.debug("PennantBuntingConnectionItem.useOn() called for player {}", context.getPlayer().getName().getString());
+        LOGGER.debug("Item has NBT: {}, hasValidNBT: {}", stack.hasTag(), hasValidNBT(stack));
+        
         if (stack.hasTag() && stack.getTag().contains("pattern", Tag.TAG_LIST)) {
             // NBT is present, capture the color information for future use
             captureColorInformation(stack);
@@ -74,6 +77,7 @@ public class PennantBuntingConnectionItem extends ConnectionItem {
 
     @Override
     public ItemStack repairNBT(ItemStack stack) {
+        LOGGER.info("Attempting to repair NBT for Pennant Bunting item");
         try {
             // First, try to extract the original color from any remaining NBT data
             DyeColor originalColor = extractOriginalColor(stack);
