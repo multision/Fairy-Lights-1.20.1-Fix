@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import net.minecraft.nbt.CompoundTag;
 
 public final class FairyLightsItemGroup
 {
@@ -37,14 +38,36 @@ public final class FairyLightsItemGroup
 
           for (final DyeColor color : DyeColor.values())
           {
-              output.accept(FLCraftingRecipes.makeHangingLights(new ItemStack(FLItems.HANGING_LIGHTS.get()), color));
+              ItemStack hangingLights = FLCraftingRecipes.makeHangingLights(new ItemStack(FLItems.HANGING_LIGHTS.get()), color);
+              
+              // Add captured color information to preserve it even if NBT is stripped
+              if (hangingLights.hasTag()) {
+                  CompoundTag tag = hangingLights.getTag();
+                  tag.putString("CapturedColor", color.getName());
+                  // Store the RGB value for this dye color
+                  int rgb = getDyeColorRGB(color);
+                  tag.putInt("CapturedRGB", rgb);
+              }
+              
+              output.accept(hangingLights);
           }
 
           for (final DyeColor color : DyeColor.values())
           {
               final ItemStack stack = new ItemStack(FLItems.PENNANT_BUNTING.get());
               DyeableItem.setColor(stack, color);
-              output.accept(FLCraftingRecipes.makePennant(stack, color));
+              ItemStack pennantBunting = FLCraftingRecipes.makePennant(stack, color);
+              
+              // Add captured color information to preserve it even if NBT is stripped
+              if (pennantBunting.hasTag()) {
+                  CompoundTag tag = pennantBunting.getTag();
+                  tag.putString("CapturedColor", color.getName());
+                  // Store the RGB value for this dye color
+                  int rgb = getDyeColorRGB(color);
+                  tag.putInt("CapturedRGB", rgb);
+              }
+              
+              output.accept(pennantBunting);
           }
           output.acceptAll(generateCollection(FLItems.TINSEL.get()));
 
@@ -89,5 +112,27 @@ public final class FairyLightsItemGroup
             stacks.add(DyeableItem.setColor(new ItemStack(item), color));
         }
         return stacks;
+    }
+
+    private static int getDyeColorRGB(DyeColor color) {
+        switch (color) {
+            case WHITE: return 0xFFFFFF;
+            case ORANGE: return 0xFFA500;
+            case MAGENTA: return 0xFF00FF;
+            case LIGHT_BLUE: return 0x87CEEB;
+            case YELLOW: return 0xFFFF00;
+            case LIME: return 0x99CC00;
+            case PINK: return 0xFFC0CB;
+            case GRAY: return 0x808080;
+            case LIGHT_GRAY: return 0xD3D3D3;
+            case CYAN: return 0x00FFFF;
+            case PURPLE: return 0x800080;
+            case BLUE: return 0x0000FF;
+            case BROWN: return 0xA52A2A;
+            case GREEN: return 0x00FF00;
+            case RED: return 0xFF0000;
+            case BLACK: return 0x000000;
+            default: return 0xFFFFFF; // Fallback
+        }
     }
 }
